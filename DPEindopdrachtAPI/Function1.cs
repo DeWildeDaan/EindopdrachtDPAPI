@@ -144,5 +144,36 @@ namespace DPEindopdrachtAPI
                 throw;
             }
         }
+
+        [FunctionName("DelComment")]
+        public static async Task<IActionResult> DelComment(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "v1/comments/{id}")] HttpRequest req, string id,
+            ILogger log)
+        {
+            try
+            {
+                string connectionstring = Environment.GetEnvironmentVariable("SQLSERVER");
+
+                using (SqlConnection sqlConnection = new SqlConnection(connectionstring))
+                {
+                    await sqlConnection.OpenAsync();
+                    using (SqlCommand sqlCommand = new SqlCommand())
+                    {
+                        sqlCommand.Connection = sqlConnection;
+                        sqlCommand.CommandText = "DELETE FROM comments WHERE CommentId = @CommentId";
+                        sqlCommand.Parameters.AddWithValue("@CommentId", id);
+                        await sqlCommand.ExecuteNonQueryAsync();
+                    }
+                }
+
+                return new OkObjectResult("");
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex.ToString());
+                return new StatusCodeResult(500);
+                throw;
+            }
+        }
     }
 }
